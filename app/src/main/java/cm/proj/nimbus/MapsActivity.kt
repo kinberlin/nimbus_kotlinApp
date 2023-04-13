@@ -24,6 +24,7 @@ import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.util.Log
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.firebase.database.DatabaseReference
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -78,9 +79,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 // lastLocation is a task running in the background
                 val location = it.result //obtain location
                 //reference to the database
-                val database: FirebaseDatabase = FirebaseDatabase.getInstance()
-                val ref: DatabaseReference = database.getReference("users")
+               // val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+               // val ref: DatabaseReference = database.getReference("users")
                 if (location != null) {
+
+                    // Get the Firebase Firestore instance
+                    val db = FirebaseFirestore.getInstance()
+ //Add the data to the "users" collection with an auto-generated document ID
+
 
                     val latLng = LatLng(location.latitude, location.longitude)
                     // create a marker at the exact location
@@ -88,10 +94,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         .title("You are currently here!"))
                     // create an object that will specify how the camera will be updated
                     val update = CameraUpdateFactory.newLatLngZoom(latLng, 16.0f)
-
+                    //Log.d("Firebase", location.toString())
                     map.moveCamera(update)
                     //Save the location data to the database
-                    ref.setValue(location)
+                   // ref.setValue(location)
+                    db.collection("users")
+                        .add(location)
+                        .addOnSuccessListener { documentReference ->
+                            Log.d("Firebase", "DocumentSnapshot added with ID: ${documentReference.id}")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("Firebase", "Error adding document", e)
+                        }
                 } else {
                     // if location is null , log an error message
                     Log.e(TAG, "No location found")
