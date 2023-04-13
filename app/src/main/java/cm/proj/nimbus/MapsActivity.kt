@@ -106,7 +106,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             // call requestLocPermissions() if permission isn't granted
             requestLocPermissions()
         } else {
-            Log.d(TAG, "Suspicious")
             fusedLocClient.lastLocation.addOnCompleteListener {
                 // lastLocation is a task running in the background
                 val location = it.result //obtain location
@@ -134,7 +133,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                 .title("You are now here!")
 
                         )
-                        updst.text = "Last Known position was at : $current"
+                        updst.text = "Last Known position was on : $current"
                         Log.d(TAG, current)
                     }
 
@@ -249,7 +248,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val job = CoroutineScope(Dispatchers.IO).launch {
             Log.d(TAG, "Launched Coroutine")
             while (isActive) {
-                setupLocClient()
+                getCurrentLocation()
                 state =2
                 Log.d(TAG, "Set up")
                 delay(UPDATE_INTERVAL)
