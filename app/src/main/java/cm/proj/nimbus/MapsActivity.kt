@@ -5,6 +5,7 @@ import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
@@ -38,7 +39,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var file: File = File(fileName)
     val UPDATE_INTERVAL = 10000L // milliseconds
     val MAP_ZOOM_LEVEL = 15f
-
+    var countoffline = 1
     // Get the Firebase Firestore instance
     val db = FirebaseFirestore.getInstance()
 
@@ -131,8 +132,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         map.addMarker(
                             MarkerOptions().position(latLng)
                                 .title("You are now here!")
-
                         )
+                        countoffline = 0
                         updst.text = "Last Known position was on : $current"
                         Log.d(TAG, current)
                     }
@@ -152,9 +153,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 } else {
                     // if location is null , log an error message
                     Log.d(TAG, "Location is null")
-
+                    if (countoffline == 3){
+                        val intent = Intent(this, ErrorActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                    countoffline += 1
                 }
-
 
             }
         }

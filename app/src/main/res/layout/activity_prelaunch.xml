@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
-
+    android:background="#FFFFFF"
+    tools:context=".prelaunch_activity">
 
     <VideoView
         android:id="@+id/videoView"
@@ -13,7 +13,6 @@
         android:layout_height="200dp"
         android:layout_marginTop="100dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.563"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -31,7 +30,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
-        android:text="Note : You will be redirected on this page if upon viewing map, you get offline fr more than 30 Seconds"
+        android:text="Note : You will be redirected on this page if upon viewing map, you get offline for more than 30 Seconds"
         android:textColor="#000"
         android:gravity="center"
         android:textSize="16sp"

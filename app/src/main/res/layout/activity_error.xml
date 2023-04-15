@@ -4,47 +4,45 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
-
+    tools:context=".ErrorActivity">
 
     <VideoView
-        android:id="@+id/videoView"
+        android:id="@+id/videoView1"
         android:layout_width="200dp"
         android:layout_height="200dp"
         android:layout_marginTop="100dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.563"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/txt_hour"
+        android:id="@+id/txt_hour1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="#000"
         android:textSize="26sp"
-        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintBottom_toTopOf="@+id/button1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/videoView" />
+        app:layout_constraintTop_toBottomOf="@+id/videoView1" />
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
-        android:text="Note : You will be redirected on this page if upon viewing map, you get offline fr more than 30 Seconds"
-        android:textColor="#000"
+        android:text="Note : You were offline for more than 40s. \nOnline yet ? Press  on Button : \n Locate Me"
+        android:textColor="#FF0000"
         android:gravity="center"
         android:textSize="16sp"
-        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintBottom_toTopOf="@+id/button1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txt_hour" />
+        app:layout_constraintTop_toBottomOf="@+id/txt_hour1" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/button1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="View Map"
+        android:text="Locate Me"
         android:textColor="#FFFFFF"
         android:textStyle="bold|italic"
         android:textSize="20sp"

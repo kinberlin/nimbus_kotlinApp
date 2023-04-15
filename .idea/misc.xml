@@ -3,8 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Walter/AndroidStudioProjects/nimbus/app/src/main/res/layout/activity_error.xml" value="0.19010416666666666" />
         <entry key="..\:/Users/Walter/AndroidStudioProjects/nimbus/app/src/main/res/layout/activity_main.xml" value="0.1" />
         <entry key="..\:/Users/Walter/AndroidStudioProjects/nimbus/app/src/main/res/layout/activity_maps.xml" value="0.1" />
+        <entry key="..\:/Users/Walter/AndroidStudioProjects/nimbus/app/src/main/res/layout/activity_prelaunch.xml" value="0.17074275362318841" />
       </map>
     </option>
   </component>
