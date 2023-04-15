@@ -9,6 +9,7 @@
         android:gravity="center">
 
         <TextView
+            android:id="@+id/departure_txt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Elf Axe Lourd"
@@ -19,7 +20,6 @@
             />
 
     <ImageView
-        android:id="@+id/show"
         android:layout_width="match_parent"
         android:layout_height="75dp"
         android:layout_weight="1"
@@ -28,6 +28,7 @@
 
 
         <TextView
+            android:id="@+id/arrival_txt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Chance Rain :"
