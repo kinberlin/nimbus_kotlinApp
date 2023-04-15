@@ -3,10 +3,13 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Users/Walter/AndroidStudioProjects/nimbus/app/src/main/res/layout/activity_error.xml" value="0.19010416666666666" />
+        <entry key="..\:/Users/Walter/AndroidStudioProjects/nimbus/app/src/main/res/layout/activity_error.xml" value="0.15920398009950248" />
         <entry key="..\:/Users/Walter/AndroidStudioProjects/nimbus/app/src/main/res/layout/activity_main.xml" value="0.1" />
         <entry key="..\:/Users/Walter/AndroidStudioProjects/nimbus/app/src/main/res/layout/activity_maps.xml" value="0.1" />
         <entry key="..\:/Users/Walter/AndroidStudioProjects/nimbus/app/src/main/res/layout/activity_prelaunch.xml" value="0.17074275362318841" />
+        <entry key="..\:/Users/Walter/AndroidStudioProjects/nimbus/app/src/main/res/layout/activity_trajet_list.xml" value="0.1" />
+        <entry key="..\:/Users/Walter/AndroidStudioProjects/nimbus/app/src/main/res/layout/recycler_view_dailyinfo.xml" value="0.25" />
+        <entry key="..\:/Users/Walter/AndroidStudioProjects/nimbus/app/src/main/res/layout/trajets_item.xml" value="0.18" />
       </map>
     </option>
   </component>
