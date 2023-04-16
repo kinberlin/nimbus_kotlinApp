@@ -22,7 +22,7 @@ data class Place(
     val latLng: LatLng,
     val address: String,
     val rating: Float
-) : ClusterItem {
+) : java.io.Serializable, ClusterItem {
     override fun getPosition(): LatLng =
         latLng
 
