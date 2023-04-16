@@ -92,6 +92,7 @@ class prelaunch_activity : AppCompatActivity() {
         var button = findViewById<Button>(R.id.button)
         button.setOnClickListener(View.OnClickListener {
             val intent = Intent(this, MapsActivity::class.java)
+            intent.putExtra("trajet", id)
             startActivity(intent)
             finish()
         })

@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class ErrorActivity : AppCompatActivity() {
+    var id:Int?=null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_error)
@@ -61,8 +62,13 @@ class ErrorActivity : AppCompatActivity() {
             }
         }
         var button = findViewById<Button>(R.id.button1)
+        if(intent.hasExtra("trajet")){
+            // get the Serializable data model class with the details in it
+            (intent.getSerializableExtra("trajet") as Int).also { id = it }
+        }
         button.setOnClickListener(View.OnClickListener {
             val intent = Intent(this, MapsActivity::class.java)
+            intent.putExtra("trajet", id!!)
             startActivity(intent)
             finish()
         })
