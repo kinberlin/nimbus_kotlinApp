@@ -59,12 +59,22 @@ class prelaunch_activity : AppCompatActivity() {
                 delay(3000)
             }
         }
+
+        var trajet:Trajet?=null
+
+        // checking if the intent has extra
+        if(intent.hasExtra("trajet")){
+            // get the Serializable data model class with the details in it
+            (intent.getSerializableExtra("trajet") as Trajet).also { trajet = it }
+        }
+
         var button = findViewById<Button>(R.id.button)
         button.setOnClickListener(View.OnClickListener {
             val intent = Intent(this, MapsActivity::class.java)
             startActivity(intent)
             finish()
         })
+
 
     }
 }

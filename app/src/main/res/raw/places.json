@@ -1,0 +1,123 @@
+[
+    {
+        "geometry": {
+            "location": {
+                "lat": 4.0127296776502215,
+                "lng": 9.731601491809275
+            }
+        },
+        "name": "Elf Axe Lourd",
+        "rating": 4.2,
+        "vicinity": "Drop at : Salle des fêtes\n d'Akwa, Carrefour Dallip"
+    },
+    {
+        "geometry": {
+            "location": {
+                "lat": 4.05021290745879,
+                "lng": 9.702499441347538
+            }
+        },
+        "name": "Salle des fêtes d'Akwa, Douala",
+        "rating": 4.6,
+        "vicinity": "Drop At : Elf Axe Lourd"
+    },
+    {
+        "geometry": {
+            "location": {
+                "lat": 4.046318195258448,
+                "lng": 9.698360428196821
+            }
+        },
+        "name": "Ancien Dallip",
+        "rating": 4.2,
+        "vicinity": "Drop at : Elf Axe Lourd"
+    },
+    {
+        "geometry": {
+            "location": {
+                "lat": 4.043458073536815,
+                "lng": 9.68628947170586
+            }
+        },
+        "name": "Délégation Régionale Des PTT Bonanjo",
+        "rating": 4.5,
+        "vicinity": "Drop At : Ndokoti"
+    },
+    {
+        "geometry": {
+            "location": {
+                "lat": 4.043128114945455,
+                "lng": 9.685799627979348
+            }
+        },
+        "name": "Poste Centrale de Bonanjo",
+        "rating": 4.6,
+        "vicinity": "Drop at Ndokoti, Bonaberi"
+    },
+    {
+        "geometry": {
+            "location": {
+                "lat": 4.0441872937920795,
+                "lng": 9.742251484606262
+            }
+        },
+        "name": "Ndokoti",
+        "rating": 4.0,
+        "vicinity": "Drop At : Délégation Régionale \nDes PTT Bonanjo, Poste Centrale\n de Bonanjo, PK 14"
+    },
+    {
+        "geometry": {
+            "location": {
+                "lat": 4.070147880668859,
+                "lng": 9.685664959167607
+            }
+        },
+        "name": "Bonabéri",
+        "rating": 4.4,
+        "vicinity": "Drop At : Bonanjo PTT,\n Marché Centrale, Ndokoti"
+    },
+    {
+        "geometry": {
+            "location": {
+                "lat": 4.025078610755638,
+                "lng": 9.714428025444716
+            }
+        },
+        "name": "Marché Centrale de Douala",
+        "rating": 4.6,
+        "vicinity": "Drop At : Bonaberi"
+    },
+    {
+        "geometry": {
+            "location": {
+                "lat": 4.079199263081389,
+                "lng": 9.792930683302915
+            }
+        },
+        "name": "PK 14",
+        "rating": 4.8,
+        "vicinity": "Drop At : Carrefour des Douanes"
+    },
+    {
+        "geometry": {
+            "location": {
+                "lat": 4.077547531934993,
+                "lng": 9.793678915805557
+            }
+        },
+        "name": "PK 14",
+        "rating": 4.8,
+        "vicinity": "Drop At : Ndokoti"
+    },
+    {
+        "geometry": {
+            "location": {
+                "lat": 4.0383894572937855,
+                "lng": 9.684141943811877
+            }
+        },
+        "name": "Carrefour des douanes du Cameroun",
+        "rating": 4.8,
+        "vicinity": "Drop At : PK 14"
+    }
+]

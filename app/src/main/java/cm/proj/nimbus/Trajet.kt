@@ -1,3 +1,5 @@
 package cm.proj.nimbus
 
-data class Trajet(val depart: Places, val arrival: Places, val departName: String, val arrivalName: String)
+import cm.proj.nimbus.place.Place
+
+data class Trajet(val depart: Place, val arrival: Place, val departName: String, val arrivalName: String) :java.io.Serializable

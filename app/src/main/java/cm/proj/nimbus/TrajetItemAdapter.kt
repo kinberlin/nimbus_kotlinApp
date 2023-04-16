@@ -1,15 +1,17 @@
 package cm.proj.nimbus
 
 
+import android.content.DialogInterface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class TrajetItemAdapter(private val mList: MutableList<Trajet>) : RecyclerView.Adapter<TrajetItemAdapter.ViewHolder>() {
-
+    private var onClickListener: OnClickListener? = null
     // create new views
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         // inflates the card_view_design view
@@ -28,6 +30,12 @@ class TrajetItemAdapter(private val mList: MutableList<Trajet>) : RecyclerView.A
         // sets the text to the textview from our itemHolder class
         holder.departure.text = ItemsViewModel.departName
         holder.arrival.text = ItemsViewModel.arrivalName
+        // Finally add an onclickListener to the item.
+    holder.itemView.setOnClickListener {
+        if (onClickListener != null) {
+            onClickListener!!.onClick(position, ItemsViewModel )
+        }
+    }
     }
 
     // return the number of the items in the list
@@ -36,9 +44,20 @@ class TrajetItemAdapter(private val mList: MutableList<Trajet>) : RecyclerView.A
         return mList.size
     }
 
+    // A function to bind the onclickListener.
+    fun setOnClickListener(onClickListener: OnClickListener) {
+        this.onClickListener = onClickListener
+    }
+
+    // onClickListener Interface
+    interface OnClickListener {
+        fun onClick(position: Int, model: Trajet)
+    }
+
     // Holds the views for adding it to image and text
     class ViewHolder(ItemView: View) : RecyclerView.ViewHolder(ItemView) {
         val departure: TextView = itemView.findViewById(R.id.departure_txt)
         val arrival: TextView = itemView.findViewById(R.id.arrival_txt)
     }
+
 }
