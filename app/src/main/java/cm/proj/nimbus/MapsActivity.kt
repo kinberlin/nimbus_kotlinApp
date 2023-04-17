@@ -1,13 +1,12 @@
 package cm.proj.nimbus
 
-import android.Manifest
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color.BLUE
+import android.graphics.Color
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
@@ -24,23 +23,20 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.maps.DirectionsApi
-import com.google.maps.DirectionsApiRequest
-import com.google.maps.model.TravelMode
-import com.google.maps.GeoApiContext
-import com.google.maps.model.DirectionsResult
-import com.google.maps.model.Unit
+import com.google.maps.android.PolyUtil
 import kotlinx.coroutines.*
+import okhttp3.*
+import org.json.JSONException
+import org.json.JSONObject
 import java.io.File
+import java.io.IOException
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
-
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -48,34 +44,35 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private val places: List<Place> by lazy {
         PlacesReader(this).read()
     }
-    lateinit var listTrajet : MutableList<Trajet>
+    lateinit var listTrajet: MutableList<Trajet>
     private lateinit var map: GoogleMap
     private val fileName = "location.nimbus"
-    var state = 1;
+    var state = 0;
     private var file: File = File(fileName)
     val UPDATE_INTERVAL = 10000L // milliseconds
     val MAP_ZOOM_LEVEL = 15f
     var countoffline = 1
-    var id:Int?=null
+    var id: Int? = null
+
     // Get the Firebase Firestore instance
     val db = FirebaseFirestore.getInstance()
-
+    val activity = this
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
         //initialise loal storage file
-        listTrajet  = mutableListOf(
-            Trajet(places[0],places[1],"Elf Axe Lourd", "Salle des fêtes d'Akwa, Douala"),
-            Trajet(places[0],places[2],"Elf Axe Lourd", "Carrefour Dallip"),
-            Trajet(places[5],places[4],"Ndokoti", "Poste Centrale de Bonanjo"),
-            Trajet(places[5],places[3],"Ndokoti", "Délégation Régionale Des PTT Bonanjo"),
-            Trajet(places[6],places[4],"Bonabéri", "Poste Centrale de Bonanjo"),
-            Trajet(places[6],places[5],"Bonabéri", "Ndokoti"),
-            Trajet(places[6],places[7],"Bonabéri", "Marché Centrale de Douala"),
-            Trajet(places[10],places[9],"Carrefour des douanes du Cameroun", "PK 14"),
-            Trajet(places[5],places[9],"Ndokoti", "PK 14")
+        listTrajet = mutableListOf(
+            Trajet(places[0], places[1], "Elf Axe Lourd", "Salle des fêtes d'Akwa, Douala"),
+            Trajet(places[0], places[2], "Elf Axe Lourd", "Carrefour Dallip"),
+            Trajet(places[5], places[4], "Ndokoti", "Poste Centrale de Bonanjo"),
+            Trajet(places[5], places[3], "Ndokoti", "Délégation Régionale Des PTT Bonanjo"),
+            Trajet(places[6], places[4], "Bonabéri", "Poste Centrale de Bonanjo"),
+            Trajet(places[6], places[5], "Bonabéri", "Ndokoti"),
+            Trajet(places[6], places[7], "Bonabéri", "Marché Centrale de Douala"),
+            Trajet(places[10], places[9], "Carrefour des douanes du Cameroun", "PK 14"),
+            Trajet(places[5], places[9], "Ndokoti", "PK 14")
         )
         file = File(this@MapsActivity.getFilesDir(), fileName)
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -91,9 +88,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             // If the permission is not granted, request it
             ActivityCompat.requestPermissions(this, arrayOf(WRITE_EXTERNAL_STORAGE), 1)
         }
+        // checking if the intent has extra
+        if (intent.hasExtra("trajet")) {
+            // get the Serializable data model class with the details in it
+            (intent.getSerializableExtra("trajet") as Int).also { id = it }
+        }
         setupLocClient()
-
-
     }
 
     private lateinit var fusedLocClient: FusedLocationProviderClient
@@ -132,7 +132,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             ) !=
             PackageManager.PERMISSION_GRANTED
         ) {
-
             // call requestLocPermissions() if permission isn't granted
             requestLocPermissions()
         } else {
@@ -153,32 +152,46 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     //Add the data to the "users" collection with an auto-generated document ID
                     val latLng = LatLng(location.latitude, location.longitude)
                     // create a marker at the exact location
-                    if(state ==1){
-                    map.addMarker(
-                        MarkerOptions().position(latLng)
-                            .title("Initial Position!") //You are currently here
-                    )}else {
+                    if (state == 1) {
                         map.addMarker(
                             MarkerOptions().position(latLng)
-                                .title("You are now here!")
+                                .title("Initial Position!") //You are currently here
                         )
+                    } else {
+                        /* map.addMarker(
+                             MarkerOptions().position(latLng)
+                                 .title("You are now here!")
+                         )*/
+                        if (state == 2) {
+                            map.addMarker(
+                                MarkerOptions().position(listTrajet[id!!].depart.latLng)
+                                    .title("Bus Drop Point!")
+                            )
+                            map.addMarker(
+                                MarkerOptions().position(listTrajet[id!!].arrival.latLng)
+                                    .title("Bus Drop Point!")
+                            )
+                            drawRouteOnMap(
+                                listTrajet[id!!].depart.latLng,
+                                listTrajet[id!!].arrival.latLng,
+                                map
+                            )
+                            // create an object that will specify how the camera will be updated
+                            //val update = CameraUpdateFactory.newLatLngZoom(latLng, 16.0f)
+                            val update =
+                                CameraUpdateFactory.newLatLngZoom(
+                                    listTrajet[id!!].depart.latLng,
+                                    10.0f
+                                )
+                            //Log.d("Firebase", location.toString())
+                            map.moveCamera(update)
+                        }
                         countoffline = 0
                         updst.text = "Last Known position was on : $current"
                         Log.d(TAG, current)
                     }
 
-                    // checking if the intent has extra
-                    if(intent.hasExtra("trajet")){
-                        // get the Serializable data model class with the details in it
-                        (intent.getSerializableExtra("trajet") as Int).also { id = it }
-                    }
-                    var points = listOf<LatLng>(listTrajet[id!!].depart.latLng, listTrajet[id!!].arrival.latLng)
-                    //drawPolyline(points, map)
 
-                    // create an object that will specify how the camera will be updated
-                    val update = CameraUpdateFactory.newLatLngZoom(latLng, 16.0f)
-                    //Log.d("Firebase", location.toString())
-                    map.moveCamera(update)
                     //Save the location data to the database
                     // ref.setValue(location)
                     if (!checkFile()) {
@@ -190,7 +203,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 } else {
                     // if location is null , log an error message
                     Log.d(TAG, "Location is null")
-                    if (countoffline == 3){
+                    if (countoffline == 3) {
                         val intent = Intent(this, ErrorActivity::class.java)
                         intent.putExtra("trajet", id!!)
                         startActivity(intent)
@@ -256,27 +269,51 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             return text
         }
     }
+
     // Function to draw a road on Google Map between two points
-    fun drawRoute(map: GoogleMap, origin: LatLng, destination: LatLng) {
-        val directionsService = DirectionsApi.newRequest(getGeoContext()).mode(TravelMode.DRIVING)
-        val request = directionsService.origin(origin)
-            .destination(destination)
-            .await()
+    fun drawRouteOnMap(origin: LatLng, destination: LatLng, googleMap: GoogleMap) {
+        val endpointBuilder = StringBuilder()
+        endpointBuilder.append("https://maps.googleapis.com/maps/api/directions/json?")
+        endpointBuilder.append("origin=${origin.latitude},${origin.longitude}&")
+        endpointBuilder.append("destination=${destination.latitude},${destination.longitude}&")
+        endpointBuilder.append("key=AIzaSyC5rTG-2EgEQNPQpvlo5zwEh6_5sncUero")
 
-        if (request.routes.isNotEmpty()) {
-            val route = request.routes[0]
+        val url = endpointBuilder.toString()
+        val request = Request.Builder().url(url).build()
 
-            val polylineOptions = PolylineOptions()
-            for (step in route.legs[0].steps) {
-                for (point in step.polyline.decodePath()) {
-                    polylineOptions.add(point)
+        val client = OkHttpClient()
+        client.newCall(request).enqueue(object : Callback {
+            override fun onResponse(call: Call, response: Response) {
+                try {
+                    val jsonResponse = JSONObject(response.body()?.string())
+                    val status = jsonResponse.getString("status")
+                    Log.d(TAG, status)
+                    Log.d(TAG, endpointBuilder.toString())
+                    if (status == "OK") {
+                        val routesArray = jsonResponse.getJSONArray("routes")
+                        val route = routesArray.getJSONObject(0)
+                        val overviewPolyline = route.getJSONObject("overview_polyline")
+
+                        val encodedString = overviewPolyline.getString("points")
+                        val pointsList = PolyUtil.decode(encodedString)
+
+                        val polylineOptions = PolylineOptions()
+                        polylineOptions.addAll(pointsList)
+                        polylineOptions.color(Color.BLUE)
+                        polylineOptions.width(10f)
+                        activity.runOnUiThread(java.lang.Runnable { map.addPolyline(polylineOptions) })
+                    }
+                } catch (e: JSONException) {
+                    e.printStackTrace()
+                    Log.d(TAG, e.message!!)
                 }
             }
 
-            polylineOptions.color(Color.BLUE)
-            polylineOptions.width(5f)
-            map.addPolyline(polylineOptions)
-        }
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+                Log.d(TAG, e.message!!)
+            }
+        })
     }
 
     // Define a function to clear the polyline from the map
@@ -284,6 +321,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Remove all polylines from the map
         map.clear()
     }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
@@ -319,7 +357,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             Log.d(TAG, "Launched Coroutine")
             while (isActive) {
                 getCurrentLocation()
-                state =2
+                state += 1
                 Log.d(TAG, "Set up")
                 delay(UPDATE_INTERVAL)
             }

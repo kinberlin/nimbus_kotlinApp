@@ -14,6 +14,7 @@
         android:gravity="center"
         android:layout_weight="9"
         android:text="Choose a Route"
+        android:textColor ="@color/purple_700"
         android:textStyle ="bold"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
