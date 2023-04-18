@@ -47,12 +47,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     lateinit var listTrajet: MutableList<Trajet>
     private lateinit var map: GoogleMap
     private val fileName = "location.nimbus"
+    private val fileName2 = "activity.nimbus"
     var state = 0;
     private var file: File = File(fileName)
+    private var file2: File = File(fileName)
     val UPDATE_INTERVAL = 10000L // milliseconds
     val MAP_ZOOM_LEVEL = 15f
     var countoffline = 1
     var id: Int? = null
+    lateinit var activities : Activity
 
     // Get the Firebase Firestore instance
     val db = FirebaseFirestore.getInstance()
@@ -75,6 +78,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             Trajet(places[5], places[9], "Ndokoti", "PK 14")
         )
         file = File(this@MapsActivity.getFilesDir(), fileName)
+        file2 = File(this@MapsActivity.getFilesDir(), fileName2)
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
@@ -93,6 +97,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             // get the Serializable data model class with the details in it
             (intent.getSerializableExtra("trajet") as Int).also { id = it }
         }
+
         setupLocClient()
     }
 
@@ -143,14 +148,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 // val ref: DatabaseReference = database.getReference("users")
                 if (location != null) {
                     Log.d(TAG, "Location is not null")
-                    // Getting latest recent position time and date
-                    var time = Calendar.getInstance().time
-                    var formatter = SimpleDateFormat("yyyy-MM-dd HH:mm")
-                    var updst = findViewById<TextView>(R.id.txt_updateStatus)
-                    var current = formatter.format(time)
 
                     //Add the data to the "users" collection with an auto-generated document ID
                     val latLng = LatLng(location.latitude, location.longitude)
+
+                    //Recent position textView Field
+                    var updst = findViewById<TextView>(R.id.txt_updateStatus)
                     // create a marker at the exact location
                     if (state == 1) {
                         map.addMarker(
@@ -186,6 +189,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             //Log.d("Firebase", location.toString())
                             map.moveCamera(update)
                         }
+                        var current = getDateTime()
                         countoffline = 0
                         updst.text = "Last Known position was on : $current"
                         Log.d(TAG, current)
@@ -193,12 +197,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
                     //Save the location data to the database
-                    // ref.setValue(location)
-                    if (!checkFile()) {
-                        addData(location, "buses")
+                    if (!checkFile(file)) {
+                        addData(location, "buses",1)
                     } else {
                         var ids = writeFile("")
                         updateDocument(ids, location, "buses")
+                    }
+                    //Save the activity data to the database
+                    activities = Activity(id!!,getDateTime() , writeFile(""))
+                    if (!checkFile(file2)) {
+                        addData(activities, "activity",2)
+                    } else {
+                        var ids = writeFile2("")
+                        updateDocument(ids, activities, "activity")
                     }
                 } else {
                     // if location is null , log an error message
@@ -215,9 +226,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
     }
+    fun getDateTime() : String{
+        // Getting latest recent position time and date
+        var time = Calendar.getInstance().time
+        var formatter = SimpleDateFormat("yyyy-MM-dd HH:mm")
+        return formatter.format(time)
+    }
 
-    fun addData(location: Location, collectionName: String) {
+    fun addData(location: Any, collectionName: String, item : Int) {
         val collectionRef = db.collection(collectionName)
+        if(item ==1){
         collectionRef.add(location)
             .addOnSuccessListener {
                 println("Data added successfully!")
@@ -225,16 +243,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
             .addOnFailureListener { e ->
                 println("Error adding data: $e")
-            }
+            }}
+        else if(item ==2){
+            collectionRef.add(location)
+                .addOnSuccessListener {
+                    println("Data added successfully!")
+                    writeFile2(it.id)
+                }
+                .addOnFailureListener { e ->
+                    println("Error adding data: $e")
+                }}
     }
 
-    fun updateDocument(id: String, newLocation: Location, collectionName: String) {
+    fun updateDocument(id: String, newDocument: Any, collectionName: String) {
         val documentRef = db.collection(collectionName).document(id)
 
         documentRef.get().addOnSuccessListener { documentSnapshot ->
             if (documentSnapshot.exists()) {
 
-                documentRef.set(newLocation!!).addOnSuccessListener {
+                documentRef.set(newDocument!!).addOnSuccessListener {
                     println("Document updated successfully")
                 }.addOnFailureListener { e ->
                     println("Error updating document")
@@ -249,14 +276,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    fun checkFile(): Boolean {
-        return (file.exists())
+    fun checkFile(files: File): Boolean {
+        return (files.exists())
     }
 
     fun writeFile(text: String): String {
         // check if file exists
 
-        if (checkFile()) {
+        if (checkFile(file)) {
             // read text from file
             val texte = file.readText()
             println("File exists. Text from file: ${texte}")
@@ -265,6 +292,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             // create new file and write text to it
             file.createNewFile()
             file.writeText(text)
+            println("File created. Text written to file: ${text}")
+            return text
+        }
+    }
+    fun writeFile2(text: String): String {
+        // check if file exists
+        if (checkFile(file2)) {
+            // read text from file
+            val texte = file2.readText()
+            println("File exists. Text from file: ${texte}")
+            return texte
+        } else {
+            // create new file and write text to it
+            file2.createNewFile()
+            file2.writeText(text)
             println("File created. Text written to file: ${text}")
             return text
         }
@@ -316,12 +358,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         })
     }
 
-    // Define a function to clear the polyline from the map
-    fun clearPolyline(map: GoogleMap) {
-        // Remove all polylines from the map
-        map.clear()
-    }
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
@@ -362,12 +398,5 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 delay(UPDATE_INTERVAL)
             }
         }
-    }
-
-    fun updateMapMarker(map: GoogleMap, latLng: LatLng) {
-        Log.d(TAG, latLng.toString())
-        map.clear()
-        map.addMarker(MarkerOptions().position(latLng))
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, MAP_ZOOM_LEVEL))
     }
 }
