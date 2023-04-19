@@ -10,10 +10,12 @@ import android.view.View
 import android.widget.*
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import cm.proj.nimbus.place.Place
 import cm.proj.nimbus.place.PlacesReader
 import kotlinx.coroutines.*
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -23,6 +25,11 @@ class prelaunch_activity : AppCompatActivity() {
     private val places: List<Place> by lazy {
         PlacesReader(this).read()
     }
+    private val fileName = "services.nimbus"
+    private val fileName2 = "activity.nimbus"
+    var state = 0;
+    private var file: File = File(fileName)
+    private var file2: File = File(fileName2)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,14 +113,41 @@ class prelaunch_activity : AppCompatActivity() {
         mySpinner.adapter = spinnerArrayAdapter
         button.setOnClickListener(View.OnClickListener {
             if(button.text == "Start Service"){
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle("Notification")
+                builder.setMessage("Notifying Other Users about current Position")
+                builder.setPositiveButton("OK", null)
+                val dialog = builder.create()
+                dialog.show()
             button.text = "Arrived"
-            button.setBackgroundColor(resources.getColor(R.color.teal_200))}
+            button.setBackgroundColor(resources.getColor(R.color.green))
+            }
             else {
                 button.text = "Start Service"
                 button.setBackgroundColor(resources.getColor(R.color.colorPrimary))
             }
         })
+    }
 
-
+    fun addData(location: Any, collectionName: String, item : Int) {
+        val collectionRef = db.collection(collectionName)
+        if(item ==1){
+            collectionRef.add(location)
+                .addOnSuccessListener {
+                    println("Data added successfully!")
+                    writeFile(it.id)
+                }
+                .addOnFailureListener { e ->
+                    println("Error adding data: $e")
+                }}
+        else if(item ==2){
+            collectionRef.add(location)
+                .addOnSuccessListener {
+                    println("Data added successfully!")
+                    writeFile2(it.id)
+                }
+                .addOnFailureListener { e ->
+                    println("Error adding data: $e")
+                }}
     }
 }

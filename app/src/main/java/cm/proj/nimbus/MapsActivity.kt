@@ -50,7 +50,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private val fileName2 = "activity.nimbus"
     var state = 0;
     private var file: File = File(fileName)
-    private var file2: File = File(fileName)
+    private var file2: File = File(fileName2)
     val UPDATE_INTERVAL = 10000L // milliseconds
     val MAP_ZOOM_LEVEL = 15f
     var countoffline = 1
