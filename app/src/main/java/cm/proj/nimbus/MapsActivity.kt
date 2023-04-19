@@ -189,27 +189,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             //Log.d("Firebase", location.toString())
                             map.moveCamera(update)
                         }
-                        var current = getDateTime()
+                        var times = Times()
+                        var current = times.getDateTime()
                         countoffline = 0
                         updst.text = "Last Known position was on : $current"
                         Log.d(TAG, current)
-                    }
-
-
-                    //Save the location data to the database
-                    if (!checkFile(file)) {
-                        addData(location, "buses",1)
-                    } else {
-                        var ids = writeFile("")
-                        updateDocument(ids, location, "buses")
-                    }
-                    //Save the activity data to the database
-                    activities = Activity(id!!,getDateTime() , writeFile(""))
-                    if (!checkFile(file2)) {
-                        addData(activities, "activity",2)
-                    } else {
-                        var ids = writeFile2("")
-                        updateDocument(ids, activities, "activity")
                     }
                 } else {
                     // if location is null , log an error message
@@ -225,12 +209,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             }
         }
-    }
-    fun getDateTime() : String{
-        // Getting latest recent position time and date
-        var time = Calendar.getInstance().time
-        var formatter = SimpleDateFormat("yyyy-MM-dd HH:mm")
-        return formatter.format(time)
     }
 
     fun addData(location: Any, collectionName: String, item : Int) {
@@ -389,7 +367,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     fun startUpdatingLocation(context: Context, map: GoogleMap) {
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
-        val job = CoroutineScope(Dispatchers.IO).launch {
+        //Commented sinc ive location is now unecessary
+       /* val job = CoroutineScope(Dispatchers.IO).launch {
             Log.d(TAG, "Launched Coroutine")
             while (isActive) {
                 getCurrentLocation()
@@ -397,6 +376,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 Log.d(TAG, "Set up")
                 delay(UPDATE_INTERVAL)
             }
-        }
+        }*/
     }
 }

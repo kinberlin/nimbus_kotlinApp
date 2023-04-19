@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import cm.proj.nimbus.place.Place
 import cm.proj.nimbus.place.PlacesReader
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.*
 import java.io.File
 import java.text.SimpleDateFormat
@@ -30,6 +31,9 @@ class prelaunch_activity : AppCompatActivity() {
     var state = 0;
     private var file: File = File(fileName)
     private var file2: File = File(fileName2)
+    // Get the Firebase Firestore instance
+    val db = FirebaseFirestore.getInstance()
+    var times = Times()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +49,7 @@ class prelaunch_activity : AppCompatActivity() {
             Trajet(places[10],places[9],"Carrefour des douanes du Cameroun", "PK 14"),
             Trajet(places[5],places[9],"Ndokoti", "PK 14")
         )
-
+        file = File(this@prelaunch_activity.getFilesDir(), fileName)
         var textView = findViewById<TextView>(R.id.txt_hour)
         var button = findViewById<Button>(R.id.button)
         button.setBackgroundColor(resources.getColor(R.color.colorPrimary))
@@ -105,7 +109,7 @@ class prelaunch_activity : AppCompatActivity() {
         var trajet = listTrajet[id!!]
         depart_txt.text = trajet.departName
         arrival_txt.text = trajet.arrivalName
-        var stringl : List<String> = listOf(trajet.departName, trajet.arrivalName)
+        var stringl : MutableList<String> = mutableListOf(trajet.departName, trajet.arrivalName)
         var spinnerArrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(
             this,
             android.R.layout.simple_spinner_dropdown_item, stringl
@@ -113,41 +117,129 @@ class prelaunch_activity : AppCompatActivity() {
         mySpinner.adapter = spinnerArrayAdapter
         button.setOnClickListener(View.OnClickListener {
             if(button.text == "Start Service"){
-                val builder = AlertDialog.Builder(this)
-                builder.setTitle("Notification")
-                builder.setMessage("Notifying Other Users about current Position")
-                builder.setPositiveButton("OK", null)
-                val dialog = builder.create()
-                dialog.show()
-            button.text = "Arrived"
-            button.setBackgroundColor(resources.getColor(R.color.green))
+                var s = Service(id!!, times.getDate(),times.getHour(),mySpinner.selectedItem.toString(),"Moving")
+                //Saving service data to the database
+                if (!checkFile(file)) {
+                    if (addData(s, "service")) {
+                        button.text = "Arrived"
+                        button.setBackgroundColor(resources.getColor(R.color.green))
+                    } else {
+                        val builder = AlertDialog.Builder(this)
+                        builder.setTitle("Network Error")
+                        builder.setMessage("Please Check your Internet Connection and retry")
+                        builder.setPositiveButton("OK", null)
+                        val dialog = builder.create()
+                        dialog.show()
+                    }
+                }
+                else{
+                    var ids = writeFile("")
+                    if (updateDocument(ids, s, "service")) {
+                        button.text = "Arrived"
+                        button.setBackgroundColor(resources.getColor(R.color.green))
+                    } else {
+                        val builder = AlertDialog.Builder(this)
+                        builder.setTitle("Network Error")
+                        builder.setMessage("Please Check your Internet Connection and retry")
+                        builder.setPositiveButton("OK", null)
+                        val dialog = builder.create()
+                        dialog.show()
+                    }
+
+                }
             }
             else {
-                button.text = "Start Service"
-                button.setBackgroundColor(resources.getColor(R.color.colorPrimary))
+                var ndep = ""
+                var l = mySpinner.selectedItemPosition
+                if(l==0){
+                    var temp = stringl[0]
+                    stringl[0] = stringl[1]
+                    stringl[1] = temp
+                    ndep = stringl[0]
+                }
+                else{
+                    var temp = stringl[1]
+                    stringl[1] = stringl[0]
+                    stringl[0] = temp
+                    ndep=stringl[1]
+                }
+                spinnerArrayAdapter.notifyDataSetChanged()
+                var s = Service(id!!, times.getDate(),times.getHour(),ndep,"Parked")
+                var ids = writeFile("")
+                if (updateDocument(ids, s, "service")) {
+                    button.text = "Start Service"
+                    button.setBackgroundColor(resources.getColor(R.color.colorPrimary))
+                } else {
+                    val builder = AlertDialog.Builder(this)
+                    builder.setTitle("Network Error")
+                    builder.setMessage("Please Check your Internet Connection and retry")
+                    builder.setPositiveButton("OK", null)
+                    val dialog = builder.create()
+                    dialog.show()
+                }
             }
         })
     }
+    fun checkFile(files: File): Boolean {
+        return (files.exists())
+    }
 
-    fun addData(location: Any, collectionName: String, item : Int) {
+    fun writeFile(text: String): String {
+        // check if file exists
+
+        if (checkFile(file)) {
+            // read text from file
+            val texte = file.readText()
+            println("File exists. Text from file: ${texte}")
+            return texte
+        } else {
+            // create new file and write text to it
+            file.createNewFile()
+            file.writeText(text)
+            println("File created. Text written to file: ${text}")
+            return text
+        }
+    }
+
+    fun addData(location: Any, collectionName: String) : Boolean{
+        var success : Boolean = false
         val collectionRef = db.collection(collectionName)
-        if(item ==1){
             collectionRef.add(location)
                 .addOnSuccessListener {
                     println("Data added successfully!")
                     writeFile(it.id)
+                    success= true
                 }
                 .addOnFailureListener { e ->
                     println("Error adding data: $e")
-                }}
-        else if(item ==2){
-            collectionRef.add(location)
-                .addOnSuccessListener {
-                    println("Data added successfully!")
-                    writeFile2(it.id)
+                    success = false
                 }
-                .addOnFailureListener { e ->
-                    println("Error adding data: $e")
-                }}
+        return success
+    }
+    fun updateDocument(id: String, newDocument: Any, collectionName: String) : Boolean{
+        val documentRef = db.collection(collectionName).document(id)
+        var success = false
+
+        documentRef.get().addOnSuccessListener { documentSnapshot ->
+            if (documentSnapshot.exists()) {
+
+                documentRef.set(newDocument!!).addOnSuccessListener {
+                    println("Document updated successfully")
+                    success = true
+                }.addOnFailureListener { e ->
+                    println("Error updating document")
+                    success = false
+                    e.printStackTrace()
+                }
+            } else {
+                println("Document does not exist")
+                success = false
+            }
+        }.addOnFailureListener { e ->
+            println("Error getting document")
+            e.printStackTrace()
+            success = false
+        }
+        return success
     }
 }
