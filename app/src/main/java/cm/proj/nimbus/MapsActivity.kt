@@ -57,6 +57,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     var id: Int? = null
     lateinit var activities : Activity
 
+
     // Get the Firebase Firestore instance
     val db = FirebaseFirestore.getInstance()
     val activity = this
@@ -210,50 +211,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
     }
-
-    fun addData(location: Any, collectionName: String, item : Int) {
-        val collectionRef = db.collection(collectionName)
-        if(item ==1){
-        collectionRef.add(location)
-            .addOnSuccessListener {
-                println("Data added successfully!")
-                writeFile(it.id)
-            }
-            .addOnFailureListener { e ->
-                println("Error adding data: $e")
-            }}
-        else if(item ==2){
-            collectionRef.add(location)
-                .addOnSuccessListener {
-                    println("Data added successfully!")
-                    writeFile2(it.id)
-                }
-                .addOnFailureListener { e ->
-                    println("Error adding data: $e")
-                }}
-    }
-
-    fun updateDocument(id: String, newDocument: Any, collectionName: String) {
-        val documentRef = db.collection(collectionName).document(id)
-
-        documentRef.get().addOnSuccessListener { documentSnapshot ->
-            if (documentSnapshot.exists()) {
-
-                documentRef.set(newDocument!!).addOnSuccessListener {
-                    println("Document updated successfully")
-                }.addOnFailureListener { e ->
-                    println("Error updating document")
-                    e.printStackTrace()
-                }
-            } else {
-                println("Document does not exist")
-            }
-        }.addOnFailureListener { e ->
-            println("Error getting document")
-            e.printStackTrace()
-        }
-    }
-
     fun checkFile(files: File): Boolean {
         return (files.exists())
     }

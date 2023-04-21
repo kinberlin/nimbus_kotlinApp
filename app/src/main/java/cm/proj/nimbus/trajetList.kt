@@ -11,6 +11,7 @@ class trajetList : AppCompatActivity() {
     private val places: List<Place> by lazy {
         PlacesReader(this).read()
     }
+
    // val places : List<Place> = PlacesReader(this).read()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

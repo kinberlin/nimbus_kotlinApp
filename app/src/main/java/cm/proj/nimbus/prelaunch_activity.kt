@@ -31,23 +31,27 @@ class prelaunch_activity : AppCompatActivity() {
     var state = 0;
     private var file: File = File(fileName)
     private var file2: File = File(fileName2)
+
     // Get the Firebase Firestore instance
     val db = FirebaseFirestore.getInstance()
     var times = Times()
+    var tempBool = false
+    var tempBool2 = false
+    val activity = this
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_prelaunch)
-        var listTrajet : MutableList<Trajet> = mutableListOf(
-            Trajet(places[0],places[1],"Elf Axe Lourd", "Salle des fêtes d'Akwa, Douala"),
-            Trajet(places[0],places[2],"Elf Axe Lourd", "Carrefour Dallip"),
-            Trajet(places[5],places[4],"Ndokoti", "Poste Centrale de Bonanjo"),
-            Trajet(places[5],places[3],"Ndokoti", "Délégation Régionale Des PTT Bonanjo"),
-            Trajet(places[6],places[4],"Bonabéri", "Poste Centrale de Bonanjo"),
-            Trajet(places[6],places[5],"Bonabéri", "Ndokoti"),
-            Trajet(places[6],places[7],"Bonabéri", "Marché Centrale de Douala"),
-            Trajet(places[10],places[9],"Carrefour des douanes du Cameroun", "PK 14"),
-            Trajet(places[5],places[9],"Ndokoti", "PK 14")
+        var listTrajet: MutableList<Trajet> = mutableListOf(
+            Trajet(places[0], places[1], "Elf Axe Lourd", "Salle des fêtes d'Akwa, Douala"),
+            Trajet(places[0], places[2], "Elf Axe Lourd", "Carrefour Dallip"),
+            Trajet(places[5], places[4], "Ndokoti", "Poste Centrale de Bonanjo"),
+            Trajet(places[5], places[3], "Ndokoti", "Délégation Régionale Des PTT Bonanjo"),
+            Trajet(places[6], places[4], "Bonabéri", "Poste Centrale de Bonanjo"),
+            Trajet(places[6], places[5], "Bonabéri", "Ndokoti"),
+            Trajet(places[6], places[7], "Bonabéri", "Marché Centrale de Douala"),
+            Trajet(places[10], places[9], "Carrefour des douanes du Cameroun", "PK 14"),
+            Trajet(places[5], places[9], "Ndokoti", "PK 14")
         )
         file = File(this@prelaunch_activity.getFilesDir(), fileName)
         var textView = findViewById<TextView>(R.id.txt_hour)
@@ -62,7 +66,8 @@ class prelaunch_activity : AppCompatActivity() {
             }
         }
         handler.postDelayed(runnable, 0)
-
+        // Initialize the coroutine scope
+        val scope = CoroutineScope(Dispatchers.Main)
         //Video Play
 
         var videoView = findViewById<VideoView>(R.id.videoView)
@@ -89,10 +94,10 @@ class prelaunch_activity : AppCompatActivity() {
             }
         }
 
-        var id:Int?=null
+        var id: Int? = null
 
         // checking if the intent has extra
-        if(intent.hasExtra("trajet")){
+        if (intent.hasExtra("trajet")) {
             // get the Serializable data model class with the details in it
             (intent.getSerializableExtra("trajet") as Int).also { id = it }
         }
@@ -109,41 +114,48 @@ class prelaunch_activity : AppCompatActivity() {
         var trajet = listTrajet[id!!]
         depart_txt.text = trajet.departName
         arrival_txt.text = trajet.arrivalName
-        var stringl : MutableList<String> = mutableListOf(trajet.departName, trajet.arrivalName)
-        var spinnerArrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(
+        var stringl: MutableList<String> = mutableListOf(trajet.departName, trajet.arrivalName)
+        var spinnerArrayAdapter: ArrayAdapter<String> = ArrayAdapter<String>(
             this,
             android.R.layout.simple_spinner_dropdown_item, stringl
         )
         mySpinner.adapter = spinnerArrayAdapter
         button.setOnClickListener(View.OnClickListener {
-            if(button.text == "Start Service"){
-                var s = Service(id!!, times.getDate(),times.getHour(),mySpinner.selectedItem.toString(),"Moving")
+            if (button.text == "Start Service") {
+                var s = Service(
+                    id!!,
+                    times.getDate(),
+                    times.getHour(),
+                    mySpinner.selectedItem.toString(),
+                    "Moving"
+                )
                 //Saving service data to the database
                 if (!checkFile(file)) {
-                    if (addData(s, "service")) {
-                        button.text = "Arrived"
-                        button.setBackgroundColor(resources.getColor(R.color.green))
-                    } else {
-                        val builder = AlertDialog.Builder(this)
-                        builder.setTitle("Network Error")
-                        builder.setMessage("Please Check your Internet Connection and retry")
-                        builder.setPositiveButton("OK", null)
-                        val dialog = builder.create()
-                        dialog.show()
+                    scope.launch {
+                        button.isEnabled = false
+                        addData(s, "service")
+                        delay(2000)
+                        if (tempBool) {
+                            button.text = "Arrived"
+                            button.setBackgroundColor(resources.getColor(R.color.green))
+                        } else {
+                            showDialog()
+                        }
+                        button.isEnabled = true
                     }
-                }
-                else{
+                } else {
                     var ids = writeFile("")
-                    if (updateDocument(ids, s, "service")) {
-                        button.text = "Arrived"
-                        button.setBackgroundColor(resources.getColor(R.color.green))
-                    } else {
-                        val builder = AlertDialog.Builder(this)
-                        builder.setTitle("Network Error")
-                        builder.setMessage("Please Check your Internet Connection and retry")
-                        builder.setPositiveButton("OK", null)
-                        val dialog = builder.create()
-                        dialog.show()
+                    scope.launch {
+                        button.isEnabled= false
+                        updateDocument(ids, s, "service")
+                        delay(3000)
+                        if (tempBool2) {
+                            button.text = "Arrived"
+                            button.setBackgroundColor(resources.getColor(R.color.green))
+                        } else {
+                            showDialog()
+                        }
+                        button.isEnabled = true
                     }
 
                 }
@@ -151,34 +163,49 @@ class prelaunch_activity : AppCompatActivity() {
             else {
                 var ndep = ""
                 var l = mySpinner.selectedItemPosition
-                if(l==0){
+                if (l == 0) {
                     var temp = stringl[0]
                     stringl[0] = stringl[1]
                     stringl[1] = temp
                     ndep = stringl[0]
-                }
-                else{
+                } else {
                     var temp = stringl[1]
                     stringl[1] = stringl[0]
                     stringl[0] = temp
-                    ndep=stringl[1]
+                    ndep = stringl[1]
                 }
                 spinnerArrayAdapter.notifyDataSetChanged()
-                var s = Service(id!!, times.getDate(),times.getHour(),ndep,"Parked")
+                var s = Service(id!!, times.getDate(), times.getHour(), ndep, "Parked")
                 var ids = writeFile("")
-                if (updateDocument(ids, s, "service")) {
-                    button.text = "Start Service"
-                    button.setBackgroundColor(resources.getColor(R.color.colorPrimary))
-                } else {
-                    val builder = AlertDialog.Builder(this)
-                    builder.setTitle("Network Error")
-                    builder.setMessage("Please Check your Internet Connection and retry")
-                    builder.setPositiveButton("OK", null)
-                    val dialog = builder.create()
-                    dialog.show()
+                scope.launch {
+                    // Show the dialog after a delay of 3 seconds
+                    button.isEnabled = false
+                    updateDocument(ids, s, "service")
+                    delay(3000)
+                    if (tempBool2) {
+                        button.text = "Start Service"
+                        button.setBackgroundColor(resources.getColor(R.color.colorPrimary))
+                    } else {
+                        showDialog()
+                    }
+                    button.isEnabled = true
                 }
             }
         })
+    }
+    private fun showDialog() {
+        // Create a dialog builder
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Network Error")
+        builder.setMessage("Please Check your Internet Connection and retry")
+        builder.setPositiveButton("OK", null)
+        // Add the positive button
+        builder.setPositiveButton("OK") { dialog, which ->
+            // Handle the positive button click
+        }
+
+        // Show the dialog
+        builder.show()
     }
     fun checkFile(files: File): Boolean {
         return (files.exists())
@@ -190,50 +217,58 @@ class prelaunch_activity : AppCompatActivity() {
         if (checkFile(file)) {
             // read text from file
             val texte = file.readText()
+            tempBool = true
             println("File exists. Text from file: ${texte}")
             return texte
         } else {
             // create new file and write text to it
             file.createNewFile()
             file.writeText(text)
+            tempBool = true
             println("File created. Text written to file: ${text}")
             return text
         }
     }
 
-    fun addData(location: Any, collectionName: String) : Boolean{
-        var success : Boolean = false
+    suspend fun addData(location: Any, collectionName: String): Boolean {
+        var success: Boolean = false
+        tempBool = false
         val collectionRef = db.collection(collectionName)
-            collectionRef.add(location)
-                .addOnSuccessListener {
-                    println("Data added successfully!")
-                    writeFile(it.id)
-                    success= true
-                }
-                .addOnFailureListener { e ->
-                    println("Error adding data: $e")
-                    success = false
-                }
+        collectionRef.add(location)
+            .addOnSuccessListener {
+                println("Data added successfully!")
+                writeFile(it.id)
+                success = true
+            }
+            .addOnFailureListener { e ->
+                println("Error adding data: $e")
+                success = false
+            }
         return success
     }
-    fun updateDocument(id: String, newDocument: Any, collectionName: String) : Boolean{
+
+    fun updateDocument(id: String, newDocument: Any, collectionName: String): Boolean {
         val documentRef = db.collection(collectionName).document(id)
         var success = false
+        tempBool2 = false
 
         documentRef.get().addOnSuccessListener { documentSnapshot ->
             if (documentSnapshot.exists()) {
 
                 documentRef.set(newDocument!!).addOnSuccessListener {
                     println("Document updated successfully")
+                    tempBool2 = true
                     success = true
                 }.addOnFailureListener { e ->
                     println("Error updating document")
                     success = false
+                    tempBool2 = false
                     e.printStackTrace()
                 }
             } else {
                 println("Document does not exist")
                 success = false
+                tempBool2 = false
             }
         }.addOnFailureListener { e ->
             println("Error getting document")
